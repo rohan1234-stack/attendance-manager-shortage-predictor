@@ -126,6 +126,7 @@ canvas.emscripten { border: 0px none; background-color: black; }
     <textarea id="output" rows="8"></textarea>
 
     <script type='text/javascript'>
+      var stdinBuffer = [];
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
@@ -166,6 +167,20 @@ canvas.emscripten { border: 0px none; background-color: black; }
       };
 
       var Module = {
+        preRun: [function() {
+          FS.init(function() {
+            if (!stdinBuffer.length) {
+              var data = window.prompt('Enter next input for Attendance Manager:', '');
+              if (data === null) {
+                return null;
+              }
+              stdinBuffer = Array.from(data + "\n", function(ch) {
+                return ch.charCodeAt(0);
+              });
+            }
+            return stdinBuffer.shift();
+          }, null, null);
+        }],
         print(...args) {
           console.log(...args);
           // These replacements are necessary if you render to raw HTML
